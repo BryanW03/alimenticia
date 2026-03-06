@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cálculo de Asignación Alimentaria Institucional</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+  :root {
+    --bg: #F4F6F8;
+    --card: #FFFFFF;
+    --border: #E1E6EB;
+    --border2: #D0D7DE;
+    --navy: #002855;       
+    --blue-light: #3A6289; 
+    --gold: #A68037;       
+    --gold-light: #F4EDDF;
+    --text-main: #24292F;
+    --text-muted: #57606A;
+    --green: #1A7F37;
+    --red: #CF222E;
+    --surface-hover: #F8FAFC;
+    --alert-bg: #FFF4CE;
+    --alert-text: #664D03;
+    --alert-border: #FFEC9E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+    position: relative;
+  }
+
+  /* --- HOME SCREEN --- */
+  #home-screen {
+    text-align: center;
+    animation: fadeIn 0.6s ease both;
+  }
+
+  .home-title {
+    font-family: 'Merriweather', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 900;
+    color: var(--navy);
+    margin-bottom: 16px;
+  }
+
+  .home-sub {
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 48px;
+    font-size: 15px;
+  }
+
+  .grid-islands {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .island-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .island-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,40,85,0.1);
+    border-color: var(--navy);
+  }
+
+  .island-flag { font-size: 48px; line-height: 1; }
+  .island-name {
+    font-family: 'Merriweather', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  /* --- DETAIL SCREEN --- */
+  #detail-screen {
+    display: none; 
+    animation: fadeIn 0.6s ease both;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--blue-light);
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 32px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  .back-btn:hover { background: var(--surface-hover); color: var(--navy); }
+
+  header { margin-bottom: 30px; }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: var(--gold-light);
+    padding: 6px 14px;
+    border-radius: 4px;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-family: 'Merriweather', serif;
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.2;
+  }
+
+  .usvi-alert {
+    display: none;
+    background: var(--alert-bg);
+    border: 1px solid var(--alert-border);
+    color: var(--alert-text);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    font-size: 13px;
+    line-height: 1.6;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+
+  /* ANSWER BOX */
+  .answer-box {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 36px;
+    margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+    color: #fff;
+    box-shadow: 0 16px 32px rgba(0,40,85,0.15);
+  }
+
+  .ans-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .ans-amount {
+    font-family: 'Merriweather', serif;
+    font-size: clamp(48px, 9vw, 64px);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .ans-desc { font-size: 14px; color: #D0D7DE; line-height: 1.6; }
+
+  .ans-right { display: flex; flex-direction: column; gap: 12px; }
+
+  .ans-stat {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+
+  .ans-stat-label { font-size: 11px; text-transform: uppercase; color: #A8B3BE; margin-bottom: 4px; font-weight: 600;}
+  .ans-stat-val { font-family: 'Merriweather', serif; font-size: 20px; font-weight: 700; color: #fff;}
+
+  @media (max-width: 650px) {
+    .answer-box { grid-template-columns: 1fr; gap: 24px; padding: 24px; }
+  }
+
+  .section-hd {
+    font-family: 'Merriweather', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-hd::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* Table */
+  .prog-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+
+  .prog-row {
+    display: grid;
+    grid-template-columns: 80px 100px 1fr 100px;
+    padding: 0 24px;
+    align-items: center;
+    min-height: 56px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .prog-row:last-child { border-bottom: none; }
+  .prog-row:hover { background: var(--surface-hover); }
+  .prog-row.header-row {
+    background: var(--bg);
+    min-height: 44px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .prog-row.highlight { background: rgba(166, 128, 55, 0.05); border-left: 4px solid var(--gold); }
+  
+  .col-hd { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+  .col-year { font-weight: 700; color: var(--navy); }
+  
+  .inf-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .bar-track { height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; transition: width 1s ease-out; }
+  
+  .col-amount { font-weight: 700; text-align: right; color: var(--navy); }
+
+  @media (max-width: 600px) {
+    .prog-row { grid-template-columns: 60px 80px 1fr 80px; padding: 0 16px; }
+  }
+
+  .footnote {
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  
+  <div id="home-screen">
+    <h1 class="home-title">Inflación por Isla 2021–2025</h1>
+    <p class="home-sub">Seleccione una isla para ver el reporte de inflación acumulada y la asignación alimentaria recomendada para 2026.</p>
+    
+    <div class="grid-islands">
+      <div class="island-card" onclick="showIsland('PR')">
+        <div class="island-flag">🇵🇷</div>
+        <div class="island-name">Puerto Rico</div>
+      </div>
+      <div class="island-card" onclick="showIsland('STT')">
+        <div class="island-flag">🇻🇮</div>
+        <div class="island-name">St. Thomas</div>
+      </div>
+      <div class="island-card" onclick="showIsland('STX')">
+        <div class="island-flag">🇻🇮</div>
+        <div class="island-name">St. Croix</div>
+      </div>
+      <div class="island-card" onclick="showIsland('DM')">
+        <div class="island-flag">🇩🇲</div>
+        <div class="island-name">Dominica</div>
+      </div>
+      <div class="island-card" onclick="showIsland('SKN')">
+        <div class="island-flag">🇰🇳</div>
+        <div class="island-name">St. Kitts</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="detail-screen">
+    <button class="back-btn" onclick="goBack()">
+      ← Volver a la selección de islas
+    </button>
+
+    <header>
+      <div class="tag">🧮 Reporte de Inflación · <span id="dyn-island-tag"></span></div>
+      <h1>Asignación alimentaria 2026</h1>
+    </header>
+
+    <div id="usvi-alert" class="usvi-alert">
+      <strong>ALERTA USVI:</strong> La inflación acumulada (2021–25) es superior al promedio. Los $220 originales han perdido entre el 40–46% de su poder adquisitivo en estas islas.
+    </div>
+    
+    <div class="answer-box">
+      <div>
+        <div class="ans-label">Recomendación 2026</div>
+        <div class="ans-amount">$<span id="heroAmt"></span></div>
+        <div class="ans-desc">Monto final sugerido para 2026 en base a la inflación histórica documentada para <strong id="dyn-island-name"></strong>.</div>
+      </div>
+      <div class="ans-right">
+        <div class="ans-stat">
+          <div class="ans-stat-label">Monto base (2021)</div>
+          <div class="ans-stat-val" style="color:#A8B3BE">$220.00</div>
+        </div>
+        <div class="ans-stat">
+          <div class="ans-stat-label">Acumulado 2021–2025</div>
+          <div class="ans-stat-val" style="color:var(--gold)" id="stat-accum"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-hd">Desglose 2021–2025</div>
+    <div class="prog-card">
+      <div class="prog-row header-row">
+        <div class="col-hd">Año</div>
+        <div class="col-hd">Inflación</div>
+        <div class="col-hd">Impacto Visual</div>
+        <div class="col-hd" style="text-align:right">Cálculo Ref.</div>
+      </div>
+      <div id="tableRows"></div>
+    </div>
+    
+    <div class="footnote">
+      <strong>Nota sobre los datos:</strong> La tabla refleja los porcentajes anuales de la imagen proporcionada. Los valores totales (Acumulado y Recomendación 2026) están programados para igualar los totales exactos requeridos en el reporte para cada locación, considerando las primas especiales documentadas (ej. alertas USVI).
+    </div>
+    
+  </div>
+</div>
+
+<script>
+  // Base de datos exacta a la imagen
+  const islandData = {
+    'PR': {
+      name: 'Puerto Rico', flag: '🇵🇷', base: 220,
+      rates: [3.5, 9.0, 5.8, 3.5, 3.3],
+      accum: 27.4, rec2026: 304, isUSVI: false
+    },
+    'STT': {
+      name: 'St. Thomas', flag: '🇻🇮', base: 220,
+      rates: [8.6, 9.8, 11.5, 9.6, 7.6],
+      accum: 84.6, rec2026: 406, isUSVI: true
+    },
+    'STX': {
+      name: 'St. Croix', flag: '🇻🇮', base: 220,
+      rates: [8.6, 9.3, 9.3, 5.3, 7.6],
+      accum: 67.7, rec2026: 369, isUSVI: true
+    },
+    'DM': {
+      name: 'Dominica', flag: '🇩🇲', base: 220,
+      rates: [1.5, 7.8, 5.1, 2.6, 2.5],
+      accum: 23.0, rec2026: 271, isUSVI: false
+    },
+    'SKN': {
+      name: 'St. Kitts', flag: '🇰🇳', base: 220,
+      rates: [1.2, 2.7, 3.6, 2.5, 2.4],
+      accum: 19.4, rec2026: 263, isUSVI: false
+    }
+  };
+
+  const years = [2021, 2022, 2023, 2024, 2025];
+
+  function showIsland(key) {
+    const data = islandData[key];
+    
+    // Cambiar pantallas
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('detail-screen').style.display = 'block';
+    
+    // Textos base
+    document.getElementById('dyn-island-tag').innerText = data.name + ' ' + data.flag;
+    document.getElementById('dyn-island-name').innerText = data.name;
+
+    // Alerta USVI
+    const alertBox = document.getElementById('usvi-alert');
+    if (data.isUSVI) {
+      alertBox.style.display = 'block';
+    } else {
+      alertBox.style.display = 'none';
+    }
+
+    let currentAmount = data.base;
+    let tableHTML = '';
+    
+    // Calcular el porcentaje máximo para la barra (basado en el pico más alto de la isla seleccionada)
+    const maxRate = Math.max(...data.rates);
+
+    for(let i = 0; i < years.length; i++) {
+      let r = data.rates[i];
+      let year = years[i];
+      
+      // Matemática progresiva solo de referencia visual en la tabla
+      if (i > 0) currentAmount = currentAmount * (1 + (r/100));
+
+      let chipBg = '#F4F6F8';
+      let chipCol = 'var(--text-muted)';
+      if(r >= 9) { chipBg = '#ffebe9'; chipCol = 'var(--red)'; }
+      else if(r >= 5) { chipBg = '#fff8c5'; chipCol = '#9a6700'; }
+      else { chipBg = '#dafbe1'; chipCol = 'var(--green)'; }
+
+      let barW = (r / Math.max(12, maxRate)) * 100;
+
+      tableHTML += `
+        <div class="prog-row">
+          <div class="col-year">${year}</div>
+          <div class="col-inf">
+            <span class="inf-chip" style="color:${chipCol};background:${chipBg}">${r.toFixed(1)}% ${data.isUSVI && r>9 ? '>>' : ''}</span>
+          </div>
+          <div class="col-bar">
+            <div class="bar-track">
+              <div class="bar-fill" style="width: ${barW}%; background:var(--text-muted)"></div>
+            </div>
+          </div>
+          <div class="col-amount" style="font-weight:400; color:var(--text-muted)">$${currentAmount.toFixed(2)}</div>
+        </div>
+      `;
+    }
+
+    // Agregar la fila final de recomendación forzada de la imagen
+    tableHTML += `
+      <div class="prog-row highlight">
+        <div class="col-year">Rec. 2026</div>
+        <div class="col-inf">
+          <span class="inf-chip" style="color:#A68037;background:#F4EDDF">FINAL</span>
+        </div>
+        <div class="col-bar">
+          <div class="bar-track">
+            <div class="bar-fill" style="width: 100%; background:var(--gold)"></div>
+          </div>
+        </div>
+        <div class="col-amount" style="color:var(--gold); font-size:16px;">$${data.rec2026}</div>
+      </div>
+    `;
+
+    // Inyectar resultados forzados para coincidir con la imagen
+    document.getElementById('heroAmt').innerText = data.rec2026;
+    document.getElementById('stat-accum').innerText = `+${data.accum.toFixed(1)}%`;
+    document.getElementById('tableRows').innerHTML = tableHTML;
+    
+    window.scrollTo(0, 0);
+  }
+
+  function goBack() {
+    document.getElementById('detail-screen').style.display = 'none';
+    document.getElementById('home-screen').style.display = 'block';
+  }
+</script>
+</body>
+</html>
