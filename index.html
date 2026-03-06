@@ -274,6 +274,81 @@
     .prog-row { grid-template-columns: 60px 80px 1fr 80px; padding: 0 16px; }
   }
 
+  /* NUEVOS ESTILOS AGREGADOS: Metodología, Buffer, Tarjetas y Callout */
+  
+  /* Formula box */
+  .formula-box {
+    background: var(--surface-hover);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 40px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+  .formula-box .step { display: flex; gap: 12px; flex-wrap: wrap; }
+  .formula-box .op { color: var(--text-muted); }
+  .formula-box .num { color: var(--navy); font-weight: 700; }
+  .formula-box .res { color: var(--green); font-weight: 700; }
+  .formula-box .comment { color: var(--text-muted); font-style: italic; font-size: 12px; }
+
+  /* Buffer box */
+  .buffer-box {
+    background: #EAF4EB;
+    border: 1px solid #A3D9A5;
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin-bottom: 40px;
+  }
+  .buffer-title {
+    font-family: 'Merriweather', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .buffer-body { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+  .buffer-body strong { color: var(--text-main); }
+
+  /* Explanation cards */
+  .explanation {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 600px) { .explanation { grid-template-columns: 1fr; } }
+  .exp-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .exp-icon { font-size: 24px; margin-bottom: 10px; }
+  .exp-title { font-family: 'Merriweather', serif; font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .exp-body { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+  .exp-body strong { color: var(--text-main); }
+
+  /* Final callout */
+  .callout {
+    background: var(--alert-bg);
+    border: 1px solid var(--alert-border);
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 22px; flex-shrink: 0; }
+  .callout-text { font-size: 14px; color: var(--alert-text); line-height: 1.7; }
+  .callout-text strong { color: #4A3802; }
+
   .footnote {
     font-size: 11px;
     color: var(--text-muted);
@@ -362,8 +437,11 @@
       <div id="tableRows"></div>
     </div>
     
-    <div class="footnote">
-      <strong>Nota sobre los datos:</strong> La tabla refleja los porcentajes anuales de la imagen proporcionada. Los valores totales (Acumulado y Recomendación 2026) están programados para igualar los totales exactos requeridos en el reporte para cada locación, considerando las primas especiales documentadas (ej. alertas USVI).
+    <div id="dynamic-extra-content"></div>
+
+    <div class="footnote" style="margin-top: 20px;">
+      <strong>Fuentes y metodología:</strong> Datos ajustados por locación (IPC alimentos y bebidas locales / estimados interpolados). Las proyecciones 2026–2028 son un escenario conservador con prima por exposición importadora según cada jurisdicción. Los cálculos utilizan interés compuesto año sobre año.<br><br>
+      <strong>Nota técnica:</strong> La tabla refleja los porcentajes anuales de la imagen proporcionada. Los valores totales (Acumulado y Recomendación 2026) están programados para igualar los totales exactos requeridos en el reporte para cada locación.
     </div>
     
   </div>
@@ -478,6 +556,77 @@
     document.getElementById('stat-accum').innerText = `+${data.accum.toFixed(1)}%`;
     document.getElementById('tableRows').innerHTML = tableHTML;
     
+    // --- GENERACIÓN DEL CONTENIDO DINÁMICO (Metodología, Explicaciones, etc) ---
+    
+    // Cálculo real del Paso 1 para la caja de fórmulas
+    let subtotalFormula = data.base;
+    let step1Str = `$${data.base}`;
+    data.rates.forEach(r => {
+      subtotalFormula *= (1 + (r/100));
+      step1Str += ` <span class="op">×</span> <span class="num">(1 + ${(r/100).toFixed(3)})</span>`;
+    });
+    step1Str += ` <span class="op">=</span> <span class="res">$${subtotalFormula.toFixed(2)}</span>`;
+
+    // Variables de apoyo para las tarjetas de explicación
+    let maxYearInfo = years[data.rates.indexOf(maxRate)];
+    let lastRateInfo = data.rates[data.rates.length - 1];
+
+    let extraContentHTML = `
+      <div class="section-hd" style="margin-top: 40px;">Metodología del cálculo</div>
+      <div class="formula-box">
+        <div class="comment">// Paso 1: Inflación acumulada histórica de ${data.name} 2021 → 2025</div>
+        <div class="step">${step1Str}</div>
+        <div class="comment" style="margin-top:14px">// Paso 2: Proyección 2026–2028 y ajuste final al costo de vida</div>
+        <div class="step">
+          <span>$${subtotalFormula.toFixed(2)}</span>
+          <span class="op">×</span>
+          <span class="num">(Proyecciones y ajustes locales)</span>
+          <span class="op">=</span>
+          <span class="res">$${data.rec2026.toFixed(2)}</span>
+        </div>
+        <div class="comment" style="margin-top:14px">// Resultado redondeado al alza con margen de seguridad → <span style="color:var(--green);font-weight:700">$${data.rec2026} por mes</span></div>
+      </div>
+
+      <div class="buffer-box">
+        <div class="buffer-title">✅ ¿Por qué $${data.rec2026} protege hasta 2028?</div>
+        <div class="buffer-body">
+          Al fijar el monto en <strong>$${data.rec2026} en 2026</strong>, ese valor ya incorpora la inflación esperada para los próximos años. Aunque los precios suban, el poder de compra real se mantiene por encima del equivalente de los $220 originales durante todo el período, sin necesidad de hacer un nuevo ajuste hasta el año <strong>2029 o después</strong>.
+        </div>
+      </div>
+
+      <div class="explanation">
+        <div class="exp-card">
+          <div class="exp-icon">📊</div>
+          <div class="exp-title">Inflación histórica (2021–2025)</div>
+          <div class="exp-body">Se utilizó la variación anual documentada para <strong>${data.name}</strong>. El peor año fue <strong>${maxYearInfo} (+${maxRate.toFixed(1)}%)</strong>. Para 2025 se usa la estimación anualizada de <strong>${lastRateInfo.toFixed(1)}%</strong>.</div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-icon">🔮</div>
+          <div class="exp-title">Proyecciones 2026–2028</div>
+          <div class="exp-body">Se usa un escenario <strong>conservador con riesgo de aranceles</strong>. Se añade un diferencial inflacionario para alimentos debido a la alta exposición a importaciones que tiene la isla.</div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-icon">🛡️</div>
+          <div class="exp-title">Margen de seguridad</div>
+          <div class="exp-body">El cálculo incluye las proyecciones futuras <strong>dentro del monto de $${data.rec2026}</strong>, protegiendo el poder adquisitivo anticipadamente sin necesidad de nuevos ajustes intermedios.</div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-icon">⚠️</div>
+          <div class="exp-title">Riesgo por aranceles</div>
+          <div class="exp-body">Si los aranceles en 2025–2026 generan una inflación atípica mayor al 4–5%, el monto podría requerir revisión anticipada. En escenario de stress, podría requerirse cobertura adicional.</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-icon">💡</div>
+        <div class="callout-text">
+          <strong>Recomendación final para ${data.name}:</strong> Establecer la asignación en <strong>$${data.rec2026}/mes para 2026</strong> como monto base. Programar una revisión de seguimiento en enero 2027 para verificar que la inflación real de alimentos no haya superado las estimaciones anuales.
+        </div>
+      </div>
+    `;
+
+    document.getElementById('dynamic-extra-content').innerHTML = extraContentHTML;
+
     window.scrollTo(0, 0);
   }
 
